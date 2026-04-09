@@ -12,83 +12,105 @@
         ::-webkit-scrollbar { display: none; }
         * { -ms-overflow-style: none; scrollbar-width: none; }
         
-        /* Glassmorphism & iPhone Style */
+        /* Glassmorphism & Apple Style */
         .glass {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
         
         .glass-btn {
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 9999px;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .glass-btn:active { transform: scale(0.95); background: rgba(255, 255, 255, 0.25); }
+        .glass-btn:active { transform: scale(0.92); background: rgba(255, 255, 255, 0.25); }
+        @media (hover: hover) { .glass-btn:hover { background: rgba(255, 255, 255, 0.2); } }
 
         .glass-input {
             background: rgba(0, 0, 0, 0.4);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             border-radius: 20px;
             color: white;
-            padding: 14px 20px;
+            padding: 16px 20px;
+            transition: border-color 0.3s ease;
         }
+        .glass-input:focus { outline: none; border-color: rgba(255, 255, 255, 0.5); }
 
-        /* Анимация появления */
+        /* Анимации */
         .slide-up { animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+        .pop-animation { animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(1); }
+        }
     </style>
 </head>
-<body class="bg-black text-white font-sans overflow-hidden antialiased flex h-screen">
+<body class="bg-black text-white font-sans overflow-hidden antialiased flex h-screen selection:bg-white/20">
 
     <aside class="hidden md:flex flex-col w-72 h-full border-r border-white/10 p-6 shrink-0 bg-black z-50">
-        <h1 class="text-4xl font-black text-white mb-10 tracking-tighter italic">TOSWA</h1>
+        <h1 class="text-4xl font-black text-white mb-10 tracking-tighter italic drop-shadow-lg">TOSWA</h1>
         <nav class="flex flex-col gap-4">
-            <button onclick="switchTab('home')" class="nav-btn-pc flex items-center gap-4 text-lg p-4 glass-btn w-full text-left font-bold bg-white/10">
-                <i class="fas fa-home w-6"></i> Главная
+            <button onclick="switchTab('home')" class="nav-btn-pc flex items-center gap-4 text-lg p-4 glass-btn w-full text-left font-bold bg-white/15">
+                <i class="fas fa-home w-6 text-center"></i> Главная
             </button>
             <button onclick="switchTab('discover')" class="nav-btn-pc flex items-center gap-4 text-lg p-4 glass-btn w-full text-left font-bold opacity-60">
-                <i class="fas fa-compass w-6"></i> Найти
+                <i class="fas fa-compass w-6 text-center"></i> Найти
             </button>
             <button onclick="switchTab('create')" class="nav-btn-pc flex items-center gap-4 text-lg p-4 glass-btn w-full text-left font-bold opacity-60">
-                <i class="fas fa-plus-circle w-6"></i> Создать
+                <i class="fas fa-plus-circle w-6 text-center"></i> Создать
             </button>
             <button onclick="switchTab('profile')" class="nav-btn-pc flex items-center gap-4 text-lg p-4 glass-btn w-full text-left font-bold opacity-60">
-                <i class="fas fa-user-circle w-6"></i> Профиль
+                <i class="fas fa-user-circle w-6 text-center"></i> Профиль
             </button>
         </nav>
         <div class="mt-auto" id="auth-status-pc">
-            <button onclick="toggleAuthModal()" class="w-full glass-btn py-4 font-black bg-red-600/80 hover:bg-red-500 shadow-lg shadow-red-900/20">ВОЙТИ</button>
+            <button onclick="toggleAuthModal()" class="w-full glass-btn py-4 font-black bg-white text-black hover:bg-gray-200 shadow-xl">ВОЙТИ</button>
         </div>
     </aside>
 
-    <main id="app" class="relative h-screen w-full flex-1 pb-16 md:pb-0 overflow-hidden bg-[#050505]">
+    <main id="app" class="relative h-screen w-full flex-1 pb-[88px] md:pb-0 overflow-hidden bg-[#0a0a0a]">
 
         <div id="view-home" class="view snap-container h-full w-full">
             <div class="snap-item relative w-full h-full flex justify-center items-center">
-                <div class="relative w-full h-full md:w-[420px] md:h-[92%] md:rounded-[40px] overflow-hidden bg-gray-900 md:shadow-[0_0_50px_rgba(0,0,0,0.5)] md:border md:border-white/10">
+                <div class="relative w-full h-full md:w-[420px] md:h-[92%] md:rounded-[40px] overflow-hidden bg-gray-900 md:shadow-[0_0_60px_rgba(0,0,0,0.6)] md:border md:border-white/10" ondblclick="handleDoubleTapLike(this)">
                     <video class="feed-video h-full w-full object-cover" loop playsinline>
                         <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
                     </video>
                     
-                    <div class="absolute bottom-8 left-6 flex flex-col gap-2 z-10 w-2/3">
+                    <div class="absolute bottom-6 md:bottom-8 left-6 flex flex-col gap-2 z-10 w-2/3 pointer-events-none">
                         <span class="font-bold text-xl drop-shadow-xl">@toswa_cloud</span>
-                        <p class="text-sm text-gray-200 drop-shadow-md">Мы теперь в облаке! Стеклянный интерфейс готов к работе 🥂</p>
+                        <p class="text-sm text-gray-100 drop-shadow-md leading-relaxed">Стеклянный интерфейс готов к работе! Проверьте новые кнопки и шаринг 🚀</p>
                     </div>
 
-                    <div class="absolute right-6 bottom-12 flex flex-col gap-6 items-center z-10">
-                        <div class="flex flex-col items-center cursor-pointer" onclick="handleLike(this, 1200)">
-                            <div class="glass-btn p-4 mb-1"><i class="fas fa-heart text-2xl heart-icon"></i></div>
-                            <span class="text-xs font-bold like-count">1.2K</span>
+                    <div class="absolute right-4 md:right-6 bottom-8 md:bottom-12 flex flex-col gap-6 items-center z-10">
+                        <div class="flex flex-col items-center cursor-pointer group" onclick="handleLike(this, 1200)">
+                            <div class="glass-btn p-4 mb-1 w-14 h-14 flex items-center justify-center relative overflow-hidden">
+                                <i class="fas fa-heart text-2xl heart-icon drop-shadow-md transition-colors duration-300"></i>
+                            </div>
+                            <span class="text-[11px] font-bold like-count tracking-wider">1.2K</span>
                         </div>
                         <div class="flex flex-col items-center cursor-pointer" onclick="openComments()">
-                            <div class="glass-btn p-4 mb-1"><i class="fas fa-comment text-2xl"></i></div>
-                            <span class="text-xs font-bold">45</span>
+                            <div class="glass-btn p-4 mb-1 w-14 h-14 flex items-center justify-center">
+                                <i class="fas fa-comment text-2xl drop-shadow-md"></i>
+                            </div>
+                            <span class="text-[11px] font-bold tracking-wider">45</span>
+                        </div>
+                        <div class="flex flex-col items-center cursor-pointer" onclick="shareVideo()">
+                            <div class="glass-btn p-4 mb-1 w-14 h-14 flex items-center justify-center">
+                                <i class="fas fa-share text-2xl drop-shadow-md"></i>
+                            </div>
+                            <span class="text-[11px] font-bold tracking-wider">Share</span>
                         </div>
                     </div>
                 </div>
@@ -96,90 +118,152 @@
         </div>
 
         <div id="view-create" class="view hidden h-full w-full flex items-center justify-center p-6">
-            <div class="glass p-12 rounded-[40px] w-full max-w-md text-center">
-                <div class="w-24 h-24 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <i class="fas fa-cloud-upload-alt text-4xl text-white/40"></i>
+            <div class="glass p-10 md:p-12 rounded-[40px] w-full max-w-md text-center shadow-2xl">
+                <div class="w-24 h-24 glass-btn flex items-center justify-center mx-auto mb-8 pointer-events-none">
+                    <i class="fas fa-cloud-upload-alt text-4xl text-white"></i>
                 </div>
-                <h2 class="text-3xl font-bold mb-3">Опубликовать</h2>
-                <p class="text-gray-400 mb-10 text-sm">Ваше видео увидят все пользователи Toswa в режиме реального времени.</p>
+                <h2 class="text-3xl font-black mb-4 tracking-tight">Опубликовать</h2>
+                <p class="text-gray-300 mb-10 text-sm leading-relaxed">Ваше видео увидят все пользователи Toswa в режиме реального времени.</p>
                 
                 <input type="file" id="video-input" accept="video/*" class="hidden" onchange="uploadVideo(this)">
                 <button onclick="document.getElementById('video-input').click()" class="glass-btn px-10 py-5 w-full font-black text-lg bg-white text-black">ВЫБРАТЬ ФАЙЛ</button>
-                <div id="upload-progress" class="hidden mt-6 text-sm text-blue-400 font-bold">Загрузка: 0%</div>
+                <div id="upload-progress" class="hidden mt-6 text-sm text-blue-400 font-bold bg-blue-900/20 py-2 rounded-full">Загрузка: 0%</div>
             </div>
         </div>
 
-        <div id="view-profile" class="view hidden h-full w-full overflow-y-auto p-6">
-            <div class="max-w-2xl mx-auto pt-10">
-                <div class="glass p-8 rounded-[40px] flex flex-col items-center gap-6 mb-8 text-center">
-                    <img id="user-avatar" src="https://via.placeholder.com/150" class="w-32 h-32 rounded-full border-4 border-white/10 object-cover">
-                    <div>
-                        <h2 class="text-3xl font-black" id="profile-username">@guest</h2>
-                        <div class="flex gap-8 mt-4 text-sm font-bold text-gray-400 uppercase tracking-widest">
-                            <div><span class="text-white block text-xl">0</span> видео</div>
-                            <div><span class="text-white block text-xl">0</span> фанатов</div>
+        <div id="view-profile" class="view hidden h-full w-full overflow-y-auto p-4 md:p-6">
+            <div class="max-w-2xl mx-auto pt-8 md:pt-10 pb-24">
+                <div class="glass p-8 rounded-[40px] flex flex-col items-center mb-8 relative">
+                    <button onclick="openEditProfile()" class="absolute top-6 right-6 glass-btn w-10 h-10 flex items-center justify-center text-white/70 hover:text-white">
+                        <i class="fas fa-cog"></i>
+                    </button>
+
+                    <img id="user-avatar" src="https://via.placeholder.com/150/333333/FFFFFF?text=USER" class="w-28 h-28 md:w-32 md:h-32 rounded-full border-4 border-white/20 object-cover shadow-2xl mb-4">
+                    <h2 class="text-2xl md:text-3xl font-black tracking-tight" id="profile-username">@guest</h2>
+                    <p class="text-xs text-gray-400 mt-1 mb-6" id="profile-email">Войдите в аккаунт</p>
+                    
+                    <div class="flex justify-center gap-6 md:gap-10 w-full mb-8">
+                        <div class="text-center flex-1">
+                            <span class="text-white block text-2xl font-black mb-1">0</span>
+                            <span class="text-[10px] text-gray-400 uppercase tracking-widest font-bold">Подписок</span>
+                        </div>
+                        <div class="text-center flex-1 border-x border-white/10">
+                            <span class="text-white block text-2xl font-black mb-1">0</span>
+                            <span class="text-[10px] text-gray-400 uppercase tracking-widest font-bold">Подписчиков</span>
+                        </div>
+                        <div class="text-center flex-1">
+                            <span class="text-white block text-2xl font-black mb-1">0</span>
+                            <span class="text-[10px] text-gray-400 uppercase tracking-widest font-bold">Лайков</span>
                         </div>
                     </div>
-                    <button onclick="logout()" class="glass-btn px-8 py-3 text-xs font-bold border-red-500/30 text-red-400">ВЫЙТИ ИЗ СИСТЕМЫ</button>
+
+                    <button onclick="logout()" class="glass-btn px-10 py-4 text-xs font-black text-red-400 bg-red-500/10 w-full max-w-[200px]">ВЫЙТИ ИЗ СИСТЕМЫ</button>
                 </div>
-                <div class="grid grid-cols-3 gap-3" id="user-videos">
-                    <div class="aspect-[9/16] glass rounded-3xl flex items-center justify-center text-white/10"><i class="fas fa-film text-3xl"></i></div>
+
+                <div class="flex items-center justify-center mb-6 gap-2 opacity-50">
+                    <i class="fas fa-grip-horizontal"></i>
+                    <span class="text-xs font-bold tracking-widest uppercase">Мои видео</span>
+                </div>
+                <div class="grid grid-cols-3 gap-2 md:gap-4" id="user-videos">
+                    <div class="aspect-[9/16] glass rounded-2xl flex items-center justify-center text-white/20"><i class="fas fa-video text-2xl"></i></div>
                 </div>
             </div>
         </div>
     </main>
 
-    <nav class="md:hidden fixed bottom-0 w-full glass border-t-0 flex justify-around items-center h-20 z-40 px-6 rounded-t-[35px]">
-        <button onclick="switchTab('home')" class="tab-btn text-white p-3"><i class="fas fa-home text-2xl"></i></button>
-        <button onclick="switchTab('discover')" class="tab-btn text-white/40 p-3"><i class="fas fa-search text-2xl"></i></button>
-        <button onclick="switchTab('create')" class="p-3"><div class="w-12 h-12 glass-btn flex items-center justify-center bg-white text-black border-0"><i class="fas fa-plus"></i></div></button>
-        <button onclick="switchTab('profile')" class="tab-btn text-white/40 p-3"><i class="fas fa-user text-2xl"></i></button>
+    <nav class="md:hidden fixed bottom-0 w-full glass border-t-0 border-white/5 h-[88px] z-40 rounded-t-[35px] shadow-[0_-10px_40px_rgba(0,0,0,0.5)]">
+        <div class="grid grid-cols-4 h-full items-center justify-items-center px-2 pb-safe">
+            <button onclick="switchTab('home')" class="tab-btn active text-white p-2 flex flex-col items-center gap-1 transition-opacity">
+                <i class="fas fa-home text-2xl"></i>
+            </button>
+            <button onclick="switchTab('discover')" class="tab-btn text-white/40 p-2 flex flex-col items-center gap-1 transition-opacity">
+                <i class="fas fa-search text-2xl"></i>
+            </button>
+            <button onclick="switchTab('create')" class="p-2 flex justify-center items-center">
+                <div class="w-14 h-14 glass-btn flex items-center justify-center bg-white text-black border-0 shadow-lg shadow-white/20">
+                    <i class="fas fa-plus text-xl"></i>
+                </div>
+            </button>
+            <button onclick="switchTab('profile')" class="tab-btn text-white/40 p-2 flex flex-col items-center gap-1 transition-opacity">
+                <i class="fas fa-user text-2xl"></i>
+            </button>
+        </div>
     </nav>
 
-    <div id="modal-auth" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-xl p-4">
-        <div class="glass w-full max-w-sm rounded-[45px] p-10 relative shadow-2xl">
-            <i class="fas fa-times absolute top-8 right-8 cursor-pointer opacity-40" onclick="toggleAuthModal()"></i>
+    <div id="modal-auth" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-2xl p-4 transition-opacity">
+        <div class="glass w-full max-w-sm rounded-[40px] p-8 md:p-10 relative shadow-2xl slide-up">
+            <div class="absolute top-6 right-6 w-8 h-8 glass-btn flex items-center justify-center cursor-pointer" onclick="toggleAuthModal()">
+                <i class="fas fa-times text-white/50"></i>
+            </div>
+            
             <h2 class="text-3xl font-black mb-8 text-center tracking-tight">ВХОД</h2>
             
             <form id="auth-form" onsubmit="handleAuth(event)" class="flex flex-col gap-4">
-                <input type="email" id="email-input" placeholder="Email" required class="glass-input">
-                <input type="password" id="pass-input" placeholder="Пароль (мин. 8 знаков)" required minlength="8" class="glass-input">
-                <button type="submit" class="glass-btn py-5 font-black bg-white text-black mt-4">ПРОДОЛЖИТЬ</button>
+                <input type="email" id="email-input" placeholder="Ваш Email" required class="glass-input">
+                <input type="password" id="pass-input" placeholder="Пароль (мин. 8 символов)" required minlength="8" class="glass-input">
+                <button type="submit" class="glass-btn py-4 font-black bg-white text-black mt-2 shadow-lg">ПРОДОЛЖИТЬ</button>
             </form>
             
             <div class="flex items-center my-8 opacity-20"><hr class="w-full"> <span class="px-4 text-xs font-bold">ИЛИ</span> <hr class="w-full"></div>
             
-            <button onclick="loginWithGoogle()" class="glass-btn w-full py-5 font-bold flex items-center justify-center gap-3 bg-red-600/10 border-red-500/20 text-red-500">
-                <i class="fab fa-google"></i> Google Account
+            <button onclick="loginWithGoogle()" class="glass-btn w-full py-4 font-bold flex items-center justify-center gap-3 bg-white/5 hover:bg-white/10 text-white">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" class="w-5 h-5" alt="G">
+                Продолжить с Google
             </button>
         </div>
     </div>
 
-    <div id="modal-comments" class="hidden fixed inset-0 bg-black/40 z-[90] flex items-end justify-center backdrop-blur-sm" onclick="closeComments(event)">
-        <div class="glass w-full md:max-w-[420px] h-[75vh] rounded-t-[45px] flex flex-col relative slide-up" onclick="event.stopPropagation()">
-            <div class="p-6 border-b border-white/5 flex justify-between items-center">
-                <span class="font-black tracking-widest text-xs opacity-50">КОММЕНТАРИИ</span>
-                <i class="fas fa-chevron-down cursor-pointer" onclick="closeCommentsClick()"></i>
+    <div id="modal-edit-profile" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-2xl p-4">
+        <div class="glass w-full max-w-sm rounded-[40px] p-8 relative shadow-2xl slide-up">
+            <div class="absolute top-6 right-6 w-8 h-8 glass-btn flex items-center justify-center cursor-pointer" onclick="closeEditProfile()">
+                <i class="fas fa-times text-white/50"></i>
             </div>
-            <div id="comments-list" class="flex-1 overflow-y-auto p-6 flex flex-col gap-6">
+            <h2 class="text-2xl font-black mb-6 text-center tracking-tight">Редактировать</h2>
+            
+            <form onsubmit="saveProfile(event)" class="flex flex-col gap-4">
+                <div>
+                    <label class="text-xs font-bold text-white/50 ml-4 mb-1 block uppercase tracking-wider">Никнейм</label>
+                    <input type="text" id="edit-name" placeholder="Например: @ninja" required class="glass-input w-full">
                 </div>
-            <div class="p-6 pb-10">
-                <div class="flex items-center glass-input gap-4">
-                    <input type="text" id="new-comment" placeholder="Написать..." class="bg-transparent flex-1 outline-none text-sm">
-                    <button onclick="sendComment()" class="text-blue-400 font-black text-xs uppercase">Ok</button>
+                <div>
+                    <label class="text-xs font-bold text-white/50 ml-4 mb-1 block uppercase tracking-wider">Ссылка на фото (URL)</label>
+                    <input type="url" id="edit-photo" placeholder="https://..." class="glass-input w-full">
                 </div>
+                <button type="submit" class="glass-btn py-4 font-black bg-white text-black mt-4">СОХРАНИТЬ</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="modal-comments" class="hidden fixed inset-0 bg-black/50 z-[90] flex items-end justify-center backdrop-blur-md" onclick="closeComments(event)">
+        <div class="glass w-full md:max-w-[420px] h-[70vh] md:h-[75vh] rounded-t-[40px] flex flex-col relative slide-up shadow-[0_-20px_50px_rgba(0,0,0,0.5)]" onclick="event.stopPropagation()">
+            <div class="p-6 border-b border-white/10 flex justify-between items-center bg-black/20 rounded-t-[40px]">
+                <span class="font-black tracking-widest text-xs opacity-60">КОММЕНТАРИИ</span>
+                <div class="w-8 h-8 glass-btn flex items-center justify-center cursor-pointer" onclick="closeCommentsClick()">
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+            </div>
+            
+            <div id="comments-list" class="flex-1 overflow-y-auto p-6 flex flex-col gap-6 scroll-smooth">
+                </div>
+            
+            <div class="p-4 md:p-6 pb-8 border-t border-white/5 bg-black/20">
+                <form onsubmit="sendComment(event)" class="flex items-center glass-input gap-3 p-1 pl-4">
+                    <input type="text" id="new-comment" placeholder="Ваш комментарий..." required class="bg-transparent flex-1 outline-none text-sm text-white placeholder-white/40">
+                    <button type="submit" class="w-10 h-10 glass-btn flex items-center justify-center bg-white text-black shrink-0">
+                        <i class="fas fa-paper-plane text-xs"></i>
+                    </button>
+                </form>
             </div>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
 
-        // Твой конфиг Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyDd80d_HZDQWxlnD72YXShyYz6nmlNfu9U",
             authDomain: "toswa-app.firebaseapp.com",
@@ -191,7 +275,7 @@
         };
 
         const app = initializeApp(firebaseConfig);
-        const analytics = getAnalytics(app); // Добавлена аналитика из твоего кода
+        const analytics = getAnalytics(app);
         const auth = getAuth();
         const db = getFirestore();
         const storage = getStorage();
@@ -199,33 +283,88 @@
 
         let currentUser = null;
 
-        // Глобальные функции для кнопок
+        // AUTH ФУНКЦИИ
         window.toggleAuthModal = () => document.getElementById('modal-auth').classList.toggle('hidden');
         
         window.loginWithGoogle = async () => {
-            try {
-                await signInWithPopup(auth, googleProvider);
-                toggleAuthModal();
-            } catch (e) { alert(e.message); }
+            try { await signInWithPopup(auth, googleProvider); toggleAuthModal(); } 
+            catch (e) { alert(e.message); }
         };
 
         window.handleAuth = async (e) => {
             e.preventDefault();
             const email = document.getElementById('email-input').value;
             const pass = document.getElementById('pass-input').value;
-            try {
-                // Пытаемся войти, если нет - создаем
-                await signInWithEmailAndPassword(auth, email, pass);
-            } catch (err) {
-                if(err.code === 'auth/user-not-found') {
-                    await createUserWithEmailAndPassword(auth, email, pass);
-                } else { alert(err.message); }
+            try { await signInWithEmailAndPassword(auth, email, pass); } 
+            catch (err) {
+                if(err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
+                    try { await createUserWithEmailAndPassword(auth, email, pass); }
+                    catch(e) { alert(e.message); return; }
+                } else { alert(err.message); return; }
             }
             toggleAuthModal();
         };
 
-        window.logout = () => signOut(auth).then(() => location.reload());
+        window.logout = () => signOut(auth).then(() => { currentUser = null; switchTab('home'); });
 
+        // РЕДАКТИРОВАНИЕ ПРОФИЛЯ
+        window.openEditProfile = () => {
+            if(!currentUser) return toggleAuthModal();
+            document.getElementById('edit-name').value = currentUser.displayName || '';
+            document.getElementById('edit-photo').value = currentUser.photoURL || '';
+            document.getElementById('modal-edit-profile').classList.remove('hidden');
+        };
+
+        window.closeEditProfile = () => document.getElementById('modal-edit-profile').classList.add('hidden');
+
+        window.saveProfile = async (e) => {
+            e.preventDefault();
+            const newName = document.getElementById('edit-name').value;
+            const newPhoto = document.getElementById('edit-photo').value;
+            
+            try {
+                await updateProfile(auth.currentUser, { displayName: newName, photoURL: newPhoto });
+                updateProfileUI(auth.currentUser);
+                closeEditProfile();
+            } catch (err) { alert("Ошибка обновления: " + err.message); }
+        };
+
+        function updateProfileUI(user) {
+            const name = user.displayName || user.email.split('@')[0];
+            const photo = user.photoURL || `https://via.placeholder.com/150/333333/FFFFFF?text=${name.charAt(0).toUpperCase()}`;
+            
+            document.getElementById('profile-username').innerText = name;
+            document.getElementById('profile-email').innerText = user.email;
+            document.getElementById('user-avatar').src = photo;
+            
+            const pcStatus = document.getElementById('auth-status-pc');
+            if(pcStatus) {
+                pcStatus.innerHTML = `
+                    <div class="glass p-4 rounded-3xl flex items-center gap-3">
+                        <img src="${photo}" class="w-10 h-10 rounded-full object-cover">
+                        <div class="overflow-hidden">
+                            <p class="text-sm font-bold truncate text-white">${name}</p>
+                            <p class="text-xs text-white/50 cursor-pointer hover:text-white" onclick="logout()">Выйти</p>
+                        </div>
+                    </div>`;
+            }
+        }
+
+        onAuthStateChanged(auth, (user) => {
+            if(user) {
+                currentUser = user;
+                updateProfileUI(user);
+            } else {
+                currentUser = null;
+                document.getElementById('profile-username').innerText = "@guest";
+                document.getElementById('profile-email').innerText = "Войдите в аккаунт";
+                document.getElementById('user-avatar').src = "https://via.placeholder.com/150/333333/FFFFFF?text=USER";
+                const pcStatus = document.getElementById('auth-status-pc');
+                if(pcStatus) pcStatus.innerHTML = `<button onclick="toggleAuthModal()" class="w-full glass-btn py-4 font-black bg-white text-black hover:bg-gray-200 shadow-xl">ВОЙТИ</button>`;
+            }
+        });
+
+        // ЗАГРУЗКА ВИДЕО
         window.uploadVideo = async (input) => {
             if(!currentUser) return toggleAuthModal();
             const file = input.files[0];
@@ -247,69 +386,70 @@
                     const url = await getDownloadURL(uploadTask.snapshot.ref);
                     await addDoc(collection(db, "posts"), {
                         videoUrl: url,
-                        user: currentUser.email,
+                        userId: currentUser.uid,
+                        userDisplayName: currentUser.displayName || currentUser.email.split('@')[0],
+                        userPhoto: currentUser.photoURL || '',
                         createdAt: serverTimestamp()
                     });
                     progressEl.innerText = "Готово!";
-                    setTimeout(() => switchTab('home'), 1000);
+                    setTimeout(() => { progressEl.classList.add('hidden'); switchTab('home'); }, 1000);
                 }
             );
         };
 
-        // Слежение за пользователем
-        onAuthStateChanged(auth, (user) => {
-            if(user) {
-                currentUser = user;
-                document.getElementById('profile-username').innerText = user.displayName || user.email.split('@')[0];
-                if(user.photoURL) document.getElementById('user-avatar').src = user.photoURL;
-                document.getElementById('auth-status-pc').innerHTML = `<div class="p-4 glass rounded-3xl text-center text-xs font-bold">${user.email}</div>`;
-            }
-        });
-
-        // Real-time комменты
-        window.sendComment = async () => {
+        // КОММЕНТАРИИ (REAL-TIME)
+        window.sendComment = async (e) => {
+            e.preventDefault();
             const text = document.getElementById('new-comment').value;
-            if(!text || !currentUser) return;
+            if(!text || !currentUser) { if(!currentUser) toggleAuthModal(); return; }
+            
+            const name = currentUser.displayName || currentUser.email.split('@')[0];
+            const photo = currentUser.photoURL || `https://via.placeholder.com/150/333333/FFFFFF?text=${name.charAt(0).toUpperCase()}`;
+
             await addDoc(collection(db, "comments"), {
-                text, user: currentUser.email, time: serverTimestamp()
+                text, userName: name, userPhoto: photo, time: serverTimestamp()
             });
             document.getElementById('new-comment').value = '';
         };
 
         onSnapshot(query(collection(db, "comments"), orderBy("time", "desc")), (snap) => {
             const list = document.getElementById('comments-list');
-            list.innerHTML = snap.docs.map(doc => `
+            list.innerHTML = snap.docs.map(doc => {
+                const data = doc.data();
+                return `
                 <div class="flex gap-4 slide-up">
-                    <div class="w-10 h-10 rounded-full glass shrink-0 flex items-center justify-center font-bold text-[10px]">USER</div>
+                    <img src="${data.userPhoto || 'https://via.placeholder.com/150/333333/FFFFFF?text=U'}" class="w-10 h-10 rounded-full border border-white/10 object-cover shrink-0">
                     <div>
-                        <span class="text-[10px] font-black opacity-30 uppercase">${doc.data().user}</span>
-                        <p class="text-sm mt-1">${doc.data().text}</p>
+                        <span class="text-[11px] font-black opacity-50 tracking-wider">${data.userName}</span>
+                        <p class="text-sm mt-1 text-white/90 leading-snug">${data.text}</p>
                     </div>
-                </div>
-            `).join('');
+                </div>`;
+            }).join('');
         });
     </script>
 
     <script>
-        // Навигация (чистый JS)
+        // НАВИГАЦИЯ И UI (ЛОКАЛЬНЫЙ JS)
         function switchTab(id) {
             document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
             document.getElementById('view-' + id).classList.remove('hidden');
             
+            // Обновляем мобильный бар
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.add('opacity-40'));
             const activeMobileBtn = document.querySelector(`.tab-btn[onclick="switchTab('${id}')"]`);
             if(activeMobileBtn) activeMobileBtn.classList.remove('opacity-40');
 
-            document.querySelectorAll('.nav-btn-pc').forEach(b => b.classList.add('opacity-60'));
+            // Обновляем ПК сайдбар
+            document.querySelectorAll('.nav-btn-pc').forEach(b => {
+                b.classList.add('opacity-60'); b.classList.remove('bg-white/15');
+            });
             const activePcBtn = document.querySelector(`.nav-btn-pc[onclick="switchTab('${id}')"]`);
             if(activePcBtn) {
                 activePcBtn.classList.remove('opacity-60');
-                activePcBtn.classList.add('bg-white/10');
-            } else {
-                document.querySelectorAll('.nav-btn-pc').forEach(b => b.classList.remove('bg-white/10'));
+                activePcBtn.classList.add('bg-white/15');
             }
 
-            // Логика видео (пауза вне главной)
+            // Управление видео
             const videos = document.querySelectorAll('.feed-video');
             if (id !== 'home') {
                 videos.forEach(v => v.pause());
@@ -318,12 +458,62 @@
             }
         }
 
-        function handleLike(el, count) {
-            const icon = el.querySelector('.heart-icon');
-            icon.classList.toggle('text-red-500');
-            icon.classList.toggle('fas'); 
+        // КНОПКА ПОДЕЛИТЬСЯ (Web Share API)
+        async function shareVideo() {
+            if (navigator.share) {
+                try {
+                    await navigator.share({
+                        title: 'Toswa Video',
+                        text: 'Зацени это крутое видео на Toswa!',
+                        url: window.location.href
+                    });
+                } catch (err) { console.log('Ошибка шаринга:', err); }
+            } else {
+                // Фолбэк для старых браузеров или ПК
+                navigator.clipboard.writeText(window.location.href);
+                alert('Ссылка скопирована в буфер обмена!');
+            }
         }
 
+        // ЛОГИКА ЛАЙКОВ И АНИМАЦИЯ
+        function triggerLikeAnimation(iconElement, countElement, baseCount) {
+            iconElement.classList.toggle('text-red-500');
+            iconElement.classList.toggle('fas'); 
+            iconElement.classList.toggle('far'); // переключение заливки если нужно
+            
+            // Запускаем CSS анимацию "попа"
+            iconElement.classList.remove('pop-animation');
+            void iconElement.offsetWidth; // сброс анимации
+            iconElement.classList.add('pop-animation');
+
+            // Имитация изменения счетчика
+            if(iconElement.classList.contains('text-red-500')) {
+                countElement.innerText = formatNum(baseCount + 1);
+            } else {
+                countElement.innerText = formatNum(baseCount);
+            }
+        }
+
+        function handleLike(el, baseCount) {
+            const icon = el.querySelector('.heart-icon');
+            const countDisplay = el.querySelector('.like-count');
+            triggerLikeAnimation(icon, countDisplay, baseCount);
+        }
+
+        // Двойной тап по видео
+        function handleDoubleTapLike(videoContainer) {
+            const likeBtn = videoContainer.querySelector('.heart-icon').parentElement.parentElement;
+            handleLike(likeBtn, 1200);
+            
+            // В будущем здесь можно добавить всплывающее большое сердечко прямо по центру видео
+        }
+
+        function formatNum(num) {
+            if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+            return num;
+        }
+
+        // УПРАВЛЕНИЕ КОММЕНТАРИЯМИ
         function openComments() { document.getElementById('modal-comments').classList.remove('hidden'); }
         function closeCommentsClick() { document.getElementById('modal-comments').classList.add('hidden'); }
         function closeComments(e) { if(e.target.id === 'modal-comments') closeCommentsClick(); }
