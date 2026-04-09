@@ -2,17 +2,26 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Toswa - Real Time Videos</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        .snap-container { scroll-snap-type: y mandatory; overflow-y: scroll; height: 100vh; }
-        .snap-item { scroll-snap-align: start; }
+        /* Свайп-лента (нативная) */
+        .snap-container { 
+            scroll-snap-type: y mandatory; 
+            overflow-y: scroll; 
+            height: 100%;
+            height: 100dvh; /* Для современных мобильных браузеров */
+        }
+        .snap-item { 
+            scroll-snap-align: start; 
+            scroll-snap-stop: always;
+        }
         ::-webkit-scrollbar { display: none; }
         * { -ms-overflow-style: none; scrollbar-width: none; }
         
-        /* Glassmorphism & Apple Style */
+        /* Glassmorphism */
         .glass {
             background: rgba(255, 255, 255, 0.08);
             backdrop-filter: blur(24px);
@@ -54,6 +63,25 @@
             50% { transform: scale(1.3); }
             100% { transform: scale(1); }
         }
+
+        /* Индикатор загрузки видео */
+        .video-spinner {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border: 4px solid rgba(255,255,255,0.2);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            z-index: 5;
+        }
+        @keyframes spin {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
     </style>
 </head>
 <body class="bg-black text-white font-sans overflow-hidden antialiased flex h-screen selection:bg-white/20">
@@ -81,39 +109,21 @@
 
     <main id="app" class="relative h-screen w-full flex-1 pb-[88px] md:pb-0 overflow-hidden bg-[#0a0a0a]">
 
-        <div id="view-home" class="view snap-container h-full w-full">
-            <div class="snap-item relative w-full h-full flex justify-center items-center">
-                <div class="relative w-full h-full md:w-[420px] md:h-[92%] md:rounded-[40px] overflow-hidden bg-gray-900 md:shadow-[0_0_60px_rgba(0,0,0,0.6)] md:border md:border-white/10" ondblclick="handleDoubleTapLike(this)">
-                    <video class="feed-video h-full w-full object-cover" loop playsinline>
-                        <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
-                    </video>
-                    
-                    <div class="absolute bottom-6 md:bottom-8 left-6 flex flex-col gap-2 z-10 w-2/3 pointer-events-none">
-                        <span class="font-bold text-xl drop-shadow-xl">@toswa_cloud</span>
-                        <p class="text-sm text-gray-100 drop-shadow-md leading-relaxed">Стеклянный интерфейс готов к работе! Проверьте новые кнопки и шаринг 🚀</p>
-                    </div>
+        <div id="view-home" class="view h-full w-full">
+            <div id="feed-container" class="snap-container h-full w-full relative">
+                <div class="h-full w-full flex items-center justify-center text-white/50 text-sm">Загрузка ленты...</div>
+            </div>
+        </div>
 
-                    <div class="absolute right-4 md:right-6 bottom-8 md:bottom-12 flex flex-col gap-6 items-center z-10">
-                        <div class="flex flex-col items-center cursor-pointer group" onclick="handleLike(this, 1200)">
-                            <div class="glass-btn p-4 mb-1 w-14 h-14 flex items-center justify-center relative overflow-hidden">
-                                <i class="fas fa-heart text-2xl heart-icon drop-shadow-md transition-colors duration-300"></i>
-                            </div>
-                            <span class="text-[11px] font-bold like-count tracking-wider">1.2K</span>
-                        </div>
-                        <div class="flex flex-col items-center cursor-pointer" onclick="openComments()">
-                            <div class="glass-btn p-4 mb-1 w-14 h-14 flex items-center justify-center">
-                                <i class="fas fa-comment text-2xl drop-shadow-md"></i>
-                            </div>
-                            <span class="text-[11px] font-bold tracking-wider">45</span>
-                        </div>
-                        <div class="flex flex-col items-center cursor-pointer" onclick="shareVideo()">
-                            <div class="glass-btn p-4 mb-1 w-14 h-14 flex items-center justify-center">
-                                <i class="fas fa-share text-2xl drop-shadow-md"></i>
-                            </div>
-                            <span class="text-[11px] font-bold tracking-wider">Share</span>
-                        </div>
-                    </div>
+        <div id="view-discover" class="view hidden h-full w-full flex-col p-4 md:p-6 overflow-y-auto pt-8 pb-24 md:pb-6">
+            <div class="max-w-2xl mx-auto w-full">
+                <h2 class="text-3xl font-black mb-6 tracking-tight">Поиск</h2>
+                <div class="glass-input flex items-center mb-8 p-1 pl-4 gap-3">
+                    <i class="fas fa-search text-white/50"></i>
+                    <input type="text" id="search-input" placeholder="Искать пользователей или видео..." class="bg-transparent flex-1 outline-none text-white w-full py-2" oninput="handleSearch(this.value)">
                 </div>
+                <div id="search-results" class="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-4">
+                    </div>
             </div>
         </div>
 
@@ -123,10 +133,12 @@
                     <i class="fas fa-cloud-upload-alt text-4xl text-white"></i>
                 </div>
                 <h2 class="text-3xl font-black mb-4 tracking-tight">Опубликовать</h2>
-                <p class="text-gray-300 mb-10 text-sm leading-relaxed">Ваше видео увидят все пользователи Toswa в режиме реального времени.</p>
+                <p class="text-gray-300 mb-6 text-sm leading-relaxed">Ваше видео увидят все пользователи Toswa в режиме реального времени.</p>
                 
+                <input type="text" id="video-description" placeholder="Описание видео..." class="glass-input w-full mb-6 text-sm" maxlength="100">
+
                 <input type="file" id="video-input" accept="video/*" class="hidden" onchange="uploadVideo(this)">
-                <button onclick="document.getElementById('video-input').click()" class="glass-btn px-10 py-5 w-full font-black text-lg bg-white text-black">ВЫБРАТЬ ФАЙЛ</button>
+                <button onclick="document.getElementById('video-input').click()" class="glass-btn px-10 py-5 w-full font-black text-lg bg-white text-black hover:bg-gray-200">ВЫБРАТЬ ФАЙЛ</button>
                 <div id="upload-progress" class="hidden mt-6 text-sm text-blue-400 font-bold bg-blue-900/20 py-2 rounded-full">Загрузка: 0%</div>
             </div>
         </div>
@@ -142,21 +154,6 @@
                     <h2 class="text-2xl md:text-3xl font-black tracking-tight" id="profile-username">@guest</h2>
                     <p class="text-xs text-gray-400 mt-1 mb-6" id="profile-email">Войдите в аккаунт</p>
                     
-                    <div class="flex justify-center gap-6 md:gap-10 w-full mb-8">
-                        <div class="text-center flex-1">
-                            <span class="text-white block text-2xl font-black mb-1">0</span>
-                            <span class="text-[10px] text-gray-400 uppercase tracking-widest font-bold">Подписок</span>
-                        </div>
-                        <div class="text-center flex-1 border-x border-white/10">
-                            <span class="text-white block text-2xl font-black mb-1">0</span>
-                            <span class="text-[10px] text-gray-400 uppercase tracking-widest font-bold">Подписчиков</span>
-                        </div>
-                        <div class="text-center flex-1">
-                            <span class="text-white block text-2xl font-black mb-1">0</span>
-                            <span class="text-[10px] text-gray-400 uppercase tracking-widest font-bold">Лайков</span>
-                        </div>
-                    </div>
-
                     <button onclick="logout()" class="glass-btn px-10 py-4 text-xs font-black text-red-400 bg-red-500/10 w-full max-w-[200px]">ВЫЙТИ ИЗ СИСТЕМЫ</button>
                 </div>
 
@@ -165,8 +162,7 @@
                     <span class="text-xs font-bold tracking-widest uppercase">Мои видео</span>
                 </div>
                 <div class="grid grid-cols-3 gap-2 md:gap-4" id="user-videos">
-                    <div class="aspect-[9/16] glass rounded-2xl flex items-center justify-center text-white/20"><i class="fas fa-video text-2xl"></i></div>
-                </div>
+                    </div>
             </div>
         </div>
     </main>
@@ -260,9 +256,8 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, doc, setDoc, deleteDoc, updateDoc, increment, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDd80d_HZDQWxlnD72YXShyYz6nmlNfu9U",
@@ -275,22 +270,18 @@
         };
 
         const app = initializeApp(firebaseConfig);
-        const analytics = getAnalytics(app);
         const auth = getAuth();
         const db = getFirestore();
         const storage = getStorage();
         const googleProvider = new GoogleAuthProvider();
 
         let currentUser = null;
+        window.userLikes = new Set();
+        window.allPosts = []; // Для поиска
 
         // AUTH ФУНКЦИИ
         window.toggleAuthModal = () => document.getElementById('modal-auth').classList.toggle('hidden');
-        
-        window.loginWithGoogle = async () => {
-            try { await signInWithPopup(auth, googleProvider); toggleAuthModal(); } 
-            catch (e) { alert(e.message); }
-        };
-
+        window.loginWithGoogle = async () => { try { await signInWithPopup(auth, googleProvider); toggleAuthModal(); } catch (e) { alert(e.message); } };
         window.handleAuth = async (e) => {
             e.preventDefault();
             const email = document.getElementById('email-input').value;
@@ -304,30 +295,7 @@
             }
             toggleAuthModal();
         };
-
-        window.logout = () => signOut(auth).then(() => { currentUser = null; switchTab('home'); });
-
-        // РЕДАКТИРОВАНИЕ ПРОФИЛЯ
-        window.openEditProfile = () => {
-            if(!currentUser) return toggleAuthModal();
-            document.getElementById('edit-name').value = currentUser.displayName || '';
-            document.getElementById('edit-photo').value = currentUser.photoURL || '';
-            document.getElementById('modal-edit-profile').classList.remove('hidden');
-        };
-
-        window.closeEditProfile = () => document.getElementById('modal-edit-profile').classList.add('hidden');
-
-        window.saveProfile = async (e) => {
-            e.preventDefault();
-            const newName = document.getElementById('edit-name').value;
-            const newPhoto = document.getElementById('edit-photo').value;
-            
-            try {
-                await updateProfile(auth.currentUser, { displayName: newName, photoURL: newPhoto });
-                updateProfileUI(auth.currentUser);
-                closeEditProfile();
-            } catch (err) { alert("Ошибка обновления: " + err.message); }
-        };
+        window.logout = () => signOut(auth).then(() => { currentUser = null; window.userLikes.clear(); switchTab('home'); });
 
         function updateProfileUI(user) {
             const name = user.displayName || user.email.split('@')[0];
@@ -341,7 +309,7 @@
             if(pcStatus) {
                 pcStatus.innerHTML = `
                     <div class="glass p-4 rounded-3xl flex items-center gap-3">
-                        <img src="${photo}" class="w-10 h-10 rounded-full object-cover">
+                        <img src="${photo}" class="w-10 h-10 rounded-full object-cover shrink-0">
                         <div class="overflow-hidden">
                             <p class="text-sm font-bold truncate text-white">${name}</p>
                             <p class="text-xs text-white/50 cursor-pointer hover:text-white" onclick="logout()">Выйти</p>
@@ -354,8 +322,12 @@
             if(user) {
                 currentUser = user;
                 updateProfileUI(user);
+                loadUserLikes();
             } else {
                 currentUser = null;
+                window.userLikes.clear();
+                updateLikeIcons();
+                
                 document.getElementById('profile-username').innerText = "@guest";
                 document.getElementById('profile-email').innerText = "Войдите в аккаунт";
                 document.getElementById('user-avatar').src = "https://via.placeholder.com/150/333333/FFFFFF?text=USER";
@@ -364,12 +336,32 @@
             }
         });
 
+        window.openEditProfile = () => {
+            if(!currentUser) return toggleAuthModal();
+            document.getElementById('edit-name').value = currentUser.displayName || '';
+            document.getElementById('edit-photo').value = currentUser.photoURL || '';
+            document.getElementById('modal-edit-profile').classList.remove('hidden');
+        };
+        window.closeEditProfile = () => document.getElementById('modal-edit-profile').classList.add('hidden');
+        window.saveProfile = async (e) => {
+            e.preventDefault();
+            try {
+                await updateProfile(auth.currentUser, { 
+                    displayName: document.getElementById('edit-name').value, 
+                    photoURL: document.getElementById('edit-photo').value 
+                });
+                updateProfileUI(auth.currentUser);
+                closeEditProfile();
+            } catch (err) { alert("Ошибка обновления: " + err.message); }
+        };
+
         // ЗАГРУЗКА ВИДЕО
         window.uploadVideo = async (input) => {
             if(!currentUser) return toggleAuthModal();
             const file = input.files[0];
             if(!file) return;
 
+            const descInput = document.getElementById('video-description').value || 'Новое видео!';
             const storageRef = ref(storage, `videos/${Date.now()}_${file.name}`);
             const uploadTask = uploadBytesResumable(storageRef, file);
             
@@ -381,7 +373,7 @@
                     const prog = Math.round((snap.bytesTransferred / snap.totalBytes) * 100);
                     progressEl.innerText = `Загрузка: ${prog}%`;
                 }, 
-                (err) => alert(err.message),
+                (err) => alert("Ошибка загрузки: " + err.message),
                 async () => {
                     const url = await getDownloadURL(uploadTask.snapshot.ref);
                     await addDoc(collection(db, "posts"), {
@@ -389,15 +381,206 @@
                         userId: currentUser.uid,
                         userDisplayName: currentUser.displayName || currentUser.email.split('@')[0],
                         userPhoto: currentUser.photoURL || '',
-                        createdAt: serverTimestamp()
+                        createdAt: serverTimestamp(),
+                        description: descInput,
+                        likesCount: 0
                     });
                     progressEl.innerText = "Готово!";
+                    document.getElementById('video-description').value = '';
                     setTimeout(() => { progressEl.classList.add('hidden'); switchTab('home'); }, 1000);
                 }
             );
         };
 
-        // КОММЕНТАРИИ (REAL-TIME)
+        // ИНТЕРСЕКШН ОБСЕРВЕР (Автоплей видео при скролле)
+        const videoObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                const video = entry.target;
+                if (entry.isIntersecting) {
+                    video.play().catch(err => console.log("Autoplay blocked:", err));
+                } else {
+                    video.pause();
+                }
+            });
+        }, { threshold: 0.6 }); // Срабатывает, когда видно 60% видео
+
+        // ЗАГРУЗКА ЛЕНТЫ (Dynamic Feed)
+        function loadFeed() {
+            const feedContainer = document.getElementById('feed-container');
+            
+            onSnapshot(query(collection(db, "posts"), orderBy("createdAt", "desc")), (snap) => {
+                window.allPosts = snap.docs.map(d => ({id: d.id, ...d.data()}));
+                
+                if (snap.empty) {
+                    feedContainer.innerHTML = `<div class="h-full flex items-center justify-center text-white/50">Нет видео. Станьте первым!</div>`;
+                    return;
+                }
+
+                // Перерисовываем ленту только если это первоначальная загрузка
+                // В реальном проекте лучше добавлять/удалять узлы индивидуально
+                feedContainer.innerHTML = ''; 
+
+                snap.docs.forEach(doc => {
+                    const post = doc.data();
+                    const postId = doc.id;
+                    const isLiked = window.userLikes.has(postId);
+                    
+                    const html = `
+                    <div class="snap-item relative w-full h-full flex justify-center items-center" id="post-${postId}">
+                        <div class="relative w-full h-full md:w-[420px] md:h-[92%] md:rounded-[40px] overflow-hidden bg-black md:shadow-[0_0_60px_rgba(0,0,0,0.6)] md:border md:border-white/10" ondblclick="handleDoubleTapLike('${postId}')">
+                            
+                            <div class="video-spinner"></div>
+                            <video class="feed-video relative z-10 h-full w-full object-cover" loop playsinline src="${post.videoUrl}" onloadeddata="this.previousElementSibling.style.display='none'"></video>
+                            
+                            <div class="absolute bottom-6 md:bottom-8 left-4 md:left-6 flex flex-col gap-2 z-20 w-3/4 pointer-events-none">
+                                <span class="font-bold text-lg md:text-xl drop-shadow-xl">@${post.userDisplayName}</span>
+                                <p class="text-xs md:text-sm text-gray-100 drop-shadow-md leading-relaxed">${post.description || ''}</p>
+                            </div>
+
+                            <div class="absolute right-4 md:right-6 bottom-8 md:bottom-12 flex flex-col gap-4 md:gap-6 items-center z-20">
+                                <div class="flex flex-col items-center cursor-pointer group" onclick="toggleLike('${postId}')">
+                                    <div class="glass-btn p-3 w-12 h-12 md:w-14 md:h-14 flex items-center justify-center relative overflow-hidden">
+                                        <i class="${isLiked ? 'fas text-red-500' : 'far text-white'} fa-heart text-xl md:text-2xl heart-icon drop-shadow-md transition-colors duration-300" id="like-icon-${postId}"></i>
+                                    </div>
+                                    <span class="text-[10px] md:text-[11px] font-bold tracking-wider" id="like-count-${postId}">${formatNum(post.likesCount || 0)}</span>
+                                </div>
+                                <div class="flex flex-col items-center cursor-pointer" onclick="openComments()">
+                                    <div class="glass-btn p-3 w-12 h-12 md:w-14 md:h-14 flex items-center justify-center">
+                                        <i class="fas fa-comment text-xl md:text-2xl drop-shadow-md"></i>
+                                    </div>
+                                    <span class="text-[10px] md:text-[11px] font-bold tracking-wider">0</span>
+                                </div>
+                                <div class="flex flex-col items-center cursor-pointer" onclick="shareVideo()">
+                                    <div class="glass-btn p-3 w-12 h-12 md:w-14 md:h-14 flex items-center justify-center">
+                                        <i class="fas fa-share text-xl md:text-2xl drop-shadow-md"></i>
+                                    </div>
+                                    <span class="text-[10px] md:text-[11px] font-bold tracking-wider">Share</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>`;
+                    
+                    feedContainer.insertAdjacentHTML('beforeend', html);
+                });
+
+                // Подключаем Observer ко всем новым видео
+                document.querySelectorAll('.feed-video').forEach(vid => videoObserver.observe(vid));
+                
+                // Обновляем результаты поиска, если мы на вкладке "Найти"
+                handleSearch(document.getElementById('search-input').value);
+            });
+        }
+
+        // ЛАЙКИ (Запись в Базу Данных)
+        window.toggleLike = async (postId) => {
+            if(!currentUser) return toggleAuthModal();
+            
+            const likeRef = doc(db, "likes", `${currentUser.uid}_${postId}`);
+            const postRef = doc(db, "posts", postId);
+            
+            const icon = document.getElementById(`like-icon-${postId}`);
+            const countDisplay = document.getElementById(`like-count-${postId}`);
+            const isLiked = icon.classList.contains('text-red-500');
+            
+            // Анимация
+            icon.classList.remove('pop-animation');
+            void icon.offsetWidth; 
+            icon.classList.add('pop-animation');
+
+            try {
+                if (isLiked) {
+                    // Убираем лайк (Optimistic UI)
+                    icon.classList.remove('fas', 'text-red-500');
+                    icon.classList.add('far', 'text-white');
+                    let currentCount = parseInt(countDisplay.innerText.replace('K','000')) || 0;
+                    countDisplay.innerText = formatNum(Math.max(0, currentCount - 1));
+                    window.userLikes.delete(postId);
+                    
+                    await deleteDoc(likeRef);
+                    await updateDoc(postRef, { likesCount: increment(-1) });
+                } else {
+                    // Ставим лайк (Optimistic UI)
+                    icon.classList.remove('far', 'text-white');
+                    icon.classList.add('fas', 'text-red-500');
+                    let currentCount = parseInt(countDisplay.innerText.replace('K','000')) || 0;
+                    countDisplay.innerText = formatNum(currentCount + 1);
+                    window.userLikes.add(postId);
+                    
+                    await setDoc(likeRef, { userId: currentUser.uid, postId: postId, createdAt: serverTimestamp() });
+                    await updateDoc(postRef, { likesCount: increment(1) });
+                }
+            } catch (err) {
+                console.error("Ошибка лайка:", err);
+            }
+        };
+
+        window.handleDoubleTapLike = (postId) => {
+            const icon = document.getElementById(`like-icon-${postId}`);
+            if (icon && !icon.classList.contains('text-red-500')) {
+                toggleLike(postId);
+            }
+        };
+
+        // Подгрузка лайков текущего юзера
+        function loadUserLikes() {
+            if(!currentUser) return;
+            const q = query(collection(db, "likes"), where("userId", "==", currentUser.uid));
+            onSnapshot(q, (snap) => {
+                window.userLikes.clear();
+                snap.docs.forEach(d => window.userLikes.add(d.data().postId));
+                updateLikeIcons();
+            });
+        }
+
+        function updateLikeIcons() {
+            document.querySelectorAll('.heart-icon').forEach(icon => {
+                const postId = icon.id.replace('like-icon-', '');
+                if(window.userLikes.has(postId)) {
+                    icon.classList.remove('far', 'text-white');
+                    icon.classList.add('fas', 'text-red-500');
+                } else {
+                    icon.classList.remove('fas', 'text-red-500');
+                    icon.classList.add('far', 'text-white');
+                }
+            });
+        }
+
+        // ПОИСК (Discover Tab)
+        window.handleSearch = (queryText) => {
+            const resultsContainer = document.getElementById('search-results');
+            if(!queryText || !queryText.trim()) {
+                // Если пусто - показываем все видео
+                renderSearchResults(window.allPosts);
+                return;
+            }
+            
+            const lowerQ = queryText.toLowerCase();
+            const filtered = window.allPosts.filter(p => 
+                (p.userDisplayName && p.userDisplayName.toLowerCase().includes(lowerQ)) || 
+                (p.description && p.description.toLowerCase().includes(lowerQ))
+            );
+            
+            renderSearchResults(filtered);
+        };
+
+        function renderSearchResults(posts) {
+            const resultsContainer = document.getElementById('search-results');
+            if(posts.length === 0) {
+                resultsContainer.innerHTML = '<p class="text-white/50 text-center col-span-full mt-10">Ничего не найдено</p>';
+                return;
+            }
+            
+            resultsContainer.innerHTML = posts.map(post => `
+                <div class="aspect-[9/16] glass rounded-2xl overflow-hidden relative cursor-pointer group" onclick="switchTab('home'); /* здесь можно добавить скролл к конкретному посту */">
+                    <video class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" src="${post.videoUrl}#t=0.1" preload="metadata"></video>
+                    <div class="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/80 to-transparent p-2 pt-6">
+                        <div class="text-[10px] font-bold truncate drop-shadow-md">@${post.userDisplayName}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // КОММЕНТАРИИ (оставил как было)
         window.sendComment = async (e) => {
             e.preventDefault();
             const text = document.getElementById('new-comment').value;
@@ -406,9 +589,7 @@
             const name = currentUser.displayName || currentUser.email.split('@')[0];
             const photo = currentUser.photoURL || `https://via.placeholder.com/150/333333/FFFFFF?text=${name.charAt(0).toUpperCase()}`;
 
-            await addDoc(collection(db, "comments"), {
-                text, userName: name, userPhoto: photo, time: serverTimestamp()
-            });
+            await addDoc(collection(db, "comments"), { text, userName: name, userPhoto: photo, time: serverTimestamp() });
             document.getElementById('new-comment').value = '';
         };
 
@@ -426,10 +607,15 @@
                 </div>`;
             }).join('');
         });
+
+        // Инициализация при загрузке
+        document.addEventListener('DOMContentLoaded', () => {
+            loadFeed();
+        });
+
     </script>
 
     <script>
-        // НАВИГАЦИЯ И UI (ЛОКАЛЬНЫЙ JS)
         function switchTab(id) {
             document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
             document.getElementById('view-' + id).classList.remove('hidden');
@@ -449,63 +635,39 @@
                 activePcBtn.classList.add('bg-white/15');
             }
 
-            // Управление видео
+            // Управление видео (ставим на паузу, если ушли с главной)
             const videos = document.querySelectorAll('.feed-video');
             if (id !== 'home') {
                 videos.forEach(v => v.pause());
             } else {
-                videos.forEach(v => v.play().catch(()=>{}));
+                // Включаем только то видео, которое видно на экране
+                videos.forEach(v => {
+                    const rect = v.getBoundingClientRect();
+                    if(rect.top >= 0 && rect.bottom <= (window.innerHeight || document.documentElement.clientHeight)) {
+                        v.play().catch(()=>{});
+                    }
+                });
+            }
+            
+            // Если открыли поиск - отображаем результаты сразу
+            if(id === 'discover') {
+                handleSearch(document.getElementById('search-input').value);
             }
         }
 
-        // КНОПКА ПОДЕЛИТЬСЯ (Web Share API)
         async function shareVideo() {
             if (navigator.share) {
                 try {
                     await navigator.share({
                         title: 'Toswa Video',
-                        text: 'Зацени это крутое видео на Toswa!',
+                        text: 'Зацени это видео на Toswa!',
                         url: window.location.href
                     });
                 } catch (err) { console.log('Ошибка шаринга:', err); }
             } else {
-                // Фолбэк для старых браузеров или ПК
                 navigator.clipboard.writeText(window.location.href);
                 alert('Ссылка скопирована в буфер обмена!');
             }
-        }
-
-        // ЛОГИКА ЛАЙКОВ И АНИМАЦИЯ
-        function triggerLikeAnimation(iconElement, countElement, baseCount) {
-            iconElement.classList.toggle('text-red-500');
-            iconElement.classList.toggle('fas'); 
-            iconElement.classList.toggle('far'); // переключение заливки если нужно
-            
-            // Запускаем CSS анимацию "попа"
-            iconElement.classList.remove('pop-animation');
-            void iconElement.offsetWidth; // сброс анимации
-            iconElement.classList.add('pop-animation');
-
-            // Имитация изменения счетчика
-            if(iconElement.classList.contains('text-red-500')) {
-                countElement.innerText = formatNum(baseCount + 1);
-            } else {
-                countElement.innerText = formatNum(baseCount);
-            }
-        }
-
-        function handleLike(el, baseCount) {
-            const icon = el.querySelector('.heart-icon');
-            const countDisplay = el.querySelector('.like-count');
-            triggerLikeAnimation(icon, countDisplay, baseCount);
-        }
-
-        // Двойной тап по видео
-        function handleDoubleTapLike(videoContainer) {
-            const likeBtn = videoContainer.querySelector('.heart-icon').parentElement.parentElement;
-            handleLike(likeBtn, 1200);
-            
-            // В будущем здесь можно добавить всплывающее большое сердечко прямо по центру видео
         }
 
         function formatNum(num) {
@@ -513,7 +675,6 @@
             return num;
         }
 
-        // УПРАВЛЕНИЕ КОММЕНТАРИЯМИ
         function openComments() { document.getElementById('modal-comments').classList.remove('hidden'); }
         function closeCommentsClick() { document.getElementById('modal-comments').classList.add('hidden'); }
         function closeComments(e) { if(e.target.id === 'modal-comments') closeCommentsClick(); }
